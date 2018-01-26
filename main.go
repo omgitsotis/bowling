@@ -3,10 +3,11 @@ package main
 import (
 	// "bufio"
 	// "os"
-	"errors"
+
 	"fmt"
+	"math/rand"
 	"strconv"
-	"strings"
+	"time"
 )
 
 func main() {
@@ -15,38 +16,140 @@ func main() {
 	// text, _ := reader.ReadString('\n')
 	// fmt.Println(text)
 
-	score, _ := readScore("X X X X X X X X X XXX")
-	fmt.Println(score)
+	// score, _ := readScore("X X X X X X X X X XXX")
+	// fmt.Println(score)
+	startGame()
 }
 
-func readScore(input string) (int, error) {
-	scores := strings.Split(input, " ")
-	if len(scores) != 10 {
-		return 0, errors.New("incorrect input card")
+func startGame() {
+	rand.Seed(time.Now().Unix())
+	scoreCard := ""
+	for i := 0; i < 9; i++ {
+		fmt.Printf("Frame %d\n", i+1)
+		scoreCard = playFrame(scoreCard)
 	}
 
-	gameScore := make([]int, 10)
-	totalScore := 0
-	// wasStrike := false
-	// wasSpare := false
+	fmt.Println("Frame 10")
+	scoreCard = playFinalFrame(scoreCard)
+	fmt.Println(scoreCard)
+	calculateScore(scoreCard)
+}
 
-	for i, score := range scores {
-		// scoreValue := 0
+func playFrame(scoreCard string) string {
+	pinsLeft := 10
+	firstBowl := rand.Intn(pinsLeft + 1)
+
+	switch firstBowl {
+	case 10:
+		fmt.Println("Bowl 1 [X]")
+		scoreCard += "X "
+		return scoreCard
+	case 0:
+		fmt.Println("Bowl 1 [-]")
+		scoreCard += "-"
+	default:
+		fmt.Printf("Bowl 1 [%d]\n", firstBowl)
+		scoreCard += strconv.Itoa(firstBowl)
+		pinsLeft -= firstBowl
+	}
+
+	secondBowl := rand.Intn(pinsLeft + 1)
+	if pinsLeft-secondBowl == 0 {
+		fmt.Println("Bowl 2 [/]")
+		scoreCard += "/ "
+		return scoreCard
+	}
+
+	switch secondBowl {
+	case 0:
+		fmt.Println("Bowl 2 [-]")
+		scoreCard += "- "
+	default:
+		fmt.Printf("Bowl 2 [%d]\n", secondBowl)
+		scoreCard += strconv.Itoa(secondBowl) + " "
+	}
+
+	return scoreCard
+}
+
+func playFinalFrame(scoreCard string) string {
+	pinsLeft := 10
+	score := rand.Intn(pinsLeft + 1)
+	hasThirdBowl := false
+
+	switch score {
+	case 10:
+		fmt.Println("Bowl 1 [X]")
+		scoreCard += "X"
+		hasThirdBowl = true
+		pinsLeft = 10
+	case 0:
+		fmt.Println("Bowl 1 [-]")
+		scoreCard += "-"
+	default:
+		fmt.Printf("Bowl 1 [%d]\n", score)
+		scoreCard += strconv.Itoa(score)
+		pinsLeft -= score
+	}
+
+	score = rand.Intn(pinsLeft + 1)
+	// We don't want a spare when the person got a strike before.
+	if pinsLeft < 10 && pinsLeft-score == 0 {
+		fmt.Println("Bowl 2 [/]")
+		scoreCard += "/ "
+		hasThirdBowl = true
+		pinsLeft = 10
+	} else {
 		switch score {
-		case "X":
-			gameScore[i] = 10
-		case "-":
-			gameScore[i] = 0
-		case "/":
-			gameScore[i] = 10
+		case 10:
+			fmt.Println("Bowl 2 [X]")
+			scoreCard += "X"
+			hasThirdBowl = true
+			pinsLeft = 10
+		case 0:
+			fmt.Println("Bowl 2 [-]")
+			scoreCard += "-"
 		default:
-			gameScore[i], _ = strconv.Atoi(score)
+			fmt.Printf("Bowl 2 [%d]\n", score)
+			scoreCard += strconv.Itoa(score)
+			pinsLeft -= score
 		}
 	}
 
-	for j, frame := range gameScore {
-		if j <
+	if hasThirdBowl {
+		score = rand.Intn(pinsLeft + 1)
+		if pinsLeft < 10 && pinsLeft-score == 0 {
+			fmt.Println("Bowl 3 [/]")
+			scoreCard += "/"
+			return scoreCard
+		}
+
+		switch score {
+		case 10:
+			fmt.Println("Bowl 3 [X]")
+			scoreCard += "X"
+		case 0:
+			fmt.Println("Bowl 3 [-]")
+			scoreCard += "-"
+		default:
+			fmt.Printf("Bowl 3 [%d]\n", score)
+			scoreCard += strconv.Itoa(score)
+		}
 	}
 
-	return totalScore, nil
+	return scoreCard
+}
+
+calculateScore(scoreCard string) int {
+	score =
+	for i, char := range scores {
+		switch char {
+		case 'X':
+			s
+		}
+	}
+}
+
+lookahead(index, amountToJump int) int{
+	
 }
