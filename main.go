@@ -31,7 +31,6 @@ func startGame() {
 
 	fmt.Println("Frame 10")
 	scoreCard = playFinalFrame(scoreCard)
-	fmt.Println(scoreCard)
 	calculateScore(scoreCard)
 }
 
@@ -137,19 +136,72 @@ func playFinalFrame(scoreCard string) string {
 		}
 	}
 
+	fmt.Printf("Final scorecard [%s]\n", scoreCard)
 	return scoreCard
 }
 
-calculateScore(scoreCard string) int {
-	score =
-	for i, char := range scores {
-		switch char {
-		case 'X':
-			s
+func calculateScore(scoreCard string) int {
+	lookahead := func(index, amountToJump int) (int) {
+		if amountToJump < 0 {
+			return 0
 		}
-	}
-}
 
-lookahead(index, amountToJump int) int{
-	
+		score := 0
+		for _, char := range scoreCard[index:] {
+			switch char {
+			case 'X', '/':
+				score += 10
+				amountToJump--
+			case '-':
+				amountToJump--
+			case ' ':
+				continue
+			default:
+				value, _ := strconv.Atoi(string(char))
+				score += value
+			}
+
+			if amountToJump == 0 {
+				return score
+			}
+		}
+
+		return score
+	}
+
+	score := 0
+	frame := 1
+	for i, char := range scoreCard {
+		if frame < 10 {
+			switch char {
+			case 'X':
+				score += 10 + lookahead(i, 2)
+			case '/':
+				score += 10 + lookahead(i, 1)
+			case '-': 
+				continue
+			case ' ':
+				frame++
+			default:
+				value, _ := strconv.Atoi(string(char))
+				score += value
+			}	
+		} else {
+			lengthleft := len(scoreCard) - i
+			switch char {
+			case 'X':
+				score += 10 + lookahead(i, lengthleft)
+			case '/':
+				score += 10 + lookahead(i, lengthleft-1)
+			case '-', ' ':
+				continue				
+			default:
+				value, _ := strconv.Atoi(string(char))
+				score += value
+			}	
+		}		
+	}
+
+	fmt.Printf("Final Score [%d]\n", score)
+	return score
 }
