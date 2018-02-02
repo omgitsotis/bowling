@@ -1,37 +1,79 @@
 package main
 
 import (
-	// "bufio"
-	// "os"
-
+	"bufio"
 	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
 func main() {
-	// reader := bufio.NewReader(os.Stdin)
-	// fmt.Print("Enter text: ")
-	// text, _ := reader.ReadString('\n')
-	// fmt.Println(text)
+	for {
+		fmt.Print("Would you like to start the game? ")
+		line := readLine()
 
-	// score, _ := readScore("X X X X X X X X X XXX")
-	// fmt.Println(score)
-	startGame()
+		switch strings.ToLower(line) {
+		case "yes", "y":
+			startGame()
+		case "no", "n":
+			os.Exit(0)
+		}
+	}
+
 }
 
 func startGame() {
 	rand.Seed(time.Now().Unix())
+
+	var playerScoreCard string
+	var cpuScoreCard string
+	var playerScore int
+	var cpuScore int
+
+	frameCount := 1
+	for {
+		playerScoreCard = playFrame(playerScoreCard)
+		fmt.Printf("player score so far [%s]\n", playerScoreCard)
+		cpuScoreCard = playFrame(cpuScoreCard)
+		fmt.Printf("cpu score card so far[%s]\n", cpuScoreCard)
+		fmt.Print("Continue? ")
+		line := readLine()
+		switch strings.ToLower(line) {
+		case "yes":
+			frameCount++
+		default:
+			os.Exit(0)
+		}
+
+		if frameCount > 9 {
+			break
+		}
+	}
+
+	var finalScore string
+	if playerScore > cpuScore {
+		finalScore = fmt.Sprintf("player wins [%d] to [%d]\n", playerScore, cpuScore)
+	} else {
+		finalScore = fmt.Sprintf("cpu wins [%d] to [%d]\n", cpuScore, playerScore)
+	}
+
+	fmt.Printf(finalScore)
+}
+
+func playGame() (string, int) {
 	scoreCard := ""
 	for i := 0; i < 9; i++ {
-		fmt.Printf("Frame %d\n", i+1)
+
 		scoreCard = playFrame(scoreCard)
 	}
 
-	fmt.Println("Frame 10")
 	scoreCard = playFinalFrame(scoreCard)
-	calculateScore(scoreCard)
+	score := calculateScore(scoreCard)
+
+	return scoreCard, score
 }
 
 func playFrame(scoreCard string) string {
@@ -40,31 +82,25 @@ func playFrame(scoreCard string) string {
 
 	switch firstBowl {
 	case 10:
-		fmt.Println("Bowl 1 [X]")
 		scoreCard += "X "
 		return scoreCard
 	case 0:
-		fmt.Println("Bowl 1 [-]")
 		scoreCard += "-"
 	default:
-		fmt.Printf("Bowl 1 [%d]\n", firstBowl)
 		scoreCard += strconv.Itoa(firstBowl)
 		pinsLeft -= firstBowl
 	}
 
 	secondBowl := rand.Intn(pinsLeft + 1)
 	if pinsLeft-secondBowl == 0 {
-		fmt.Println("Bowl 2 [/]")
 		scoreCard += "/ "
 		return scoreCard
 	}
 
 	switch secondBowl {
 	case 0:
-		fmt.Println("Bowl 2 [-]")
 		scoreCard += "- "
 	default:
-		fmt.Printf("Bowl 2 [%d]\n", secondBowl)
 		scoreCard += strconv.Itoa(secondBowl) + " "
 	}
 
@@ -78,15 +114,12 @@ func playFinalFrame(scoreCard string) string {
 
 	switch score {
 	case 10:
-		fmt.Println("Bowl 1 [X]")
 		scoreCard += "X"
 		hasThirdBowl = true
 		pinsLeft = 10
 	case 0:
-		fmt.Println("Bowl 1 [-]")
 		scoreCard += "-"
 	default:
-		fmt.Printf("Bowl 1 [%d]\n", score)
 		scoreCard += strconv.Itoa(score)
 		pinsLeft -= score
 	}
@@ -94,22 +127,18 @@ func playFinalFrame(scoreCard string) string {
 	score = rand.Intn(pinsLeft + 1)
 	// We don't want a spare when the person got a strike before.
 	if pinsLeft < 10 && pinsLeft-score == 0 {
-		fmt.Println("Bowl 2 [/]")
 		scoreCard += "/ "
 		hasThirdBowl = true
 		pinsLeft = 10
 	} else {
 		switch score {
 		case 10:
-			fmt.Println("Bowl 2 [X]")
 			scoreCard += "X"
 			hasThirdBowl = true
 			pinsLeft = 10
 		case 0:
-			fmt.Println("Bowl 2 [-]")
 			scoreCard += "-"
 		default:
-			fmt.Printf("Bowl 2 [%d]\n", score)
 			scoreCard += strconv.Itoa(score)
 			pinsLeft -= score
 		}
@@ -118,36 +147,32 @@ func playFinalFrame(scoreCard string) string {
 	if hasThirdBowl {
 		score = rand.Intn(pinsLeft + 1)
 		if pinsLeft < 10 && pinsLeft-score == 0 {
-			fmt.Println("Bowl 3 [/]")
 			scoreCard += "/"
 			return scoreCard
 		}
 
 		switch score {
 		case 10:
-			fmt.Println("Bowl 3 [X]")
 			scoreCard += "X"
 		case 0:
-			fmt.Println("Bowl 3 [-]")
+
 			scoreCard += "-"
 		default:
-			fmt.Printf("Bowl 3 [%d]\n", score)
 			scoreCard += strconv.Itoa(score)
 		}
 	}
 
-	fmt.Printf("Final scorecard [%s]\n", scoreCard)
 	return scoreCard
 }
 
 func calculateScore(scoreCard string) int {
-	lookahead := func(index, amountToJump int) (int) {
+	lookahead := func(index, amountToJump int) int {
 		if amountToJump < 0 {
 			return 0
 		}
 
 		score := 0
-		for _, char := range scoreCard[index:] {
+		for _, char := range scoreCard[index+1:] {
 			switch char {
 			case 'X', '/':
 				score += 10
@@ -159,13 +184,13 @@ func calculateScore(scoreCard string) int {
 			default:
 				value, _ := strconv.Atoi(string(char))
 				score += value
+				amountToJump--
 			}
 
 			if amountToJump == 0 {
 				return score
 			}
 		}
-
 		return score
 	}
 
@@ -178,14 +203,14 @@ func calculateScore(scoreCard string) int {
 				score += 10 + lookahead(i, 2)
 			case '/':
 				score += 10 + lookahead(i, 1)
-			case '-': 
+			case '-':
 				continue
 			case ' ':
 				frame++
 			default:
 				value, _ := strconv.Atoi(string(char))
 				score += value
-			}	
+			}
 		} else {
 			lengthleft := len(scoreCard) - i
 			switch char {
@@ -194,14 +219,21 @@ func calculateScore(scoreCard string) int {
 			case '/':
 				score += 10 + lookahead(i, lengthleft-1)
 			case '-', ' ':
-				continue				
+				continue
 			default:
 				value, _ := strconv.Atoi(string(char))
 				score += value
-			}	
-		}		
+			}
+		}
 	}
-
-	fmt.Printf("Final Score [%d]\n", score)
 	return score
+}
+
+func readLine() string {
+	bio := bufio.NewReader(os.Stdin)
+	line, _, err := bio.ReadLine()
+	if err != nil {
+		fmt.Println(err)
+	}
+	return string(line)
 }
