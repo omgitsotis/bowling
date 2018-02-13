@@ -6,6 +6,9 @@ import (
 	"strconv"
 )
 
+const Skill = "skill"
+const Mentality = "mentality"
+
 type Player struct {
 	ScoreCard   string
 	Score       int
@@ -15,15 +18,28 @@ type Player struct {
 }
 
 func (p *Player) PlayBowl(pinsLeft int) int {
-	// lowerHalf := math.Ceil(float64(pinsLeft / 2))
 	averageStatus := p.Skill + p.Mentality
-	weighting := 10 - averageStatus
+	weighting := averageStatus - 10
 
 	fmt.Printf("DEBUG: weighting %v\n", weighting)
+
+	var midPoint int
+	if pinsLeft%2 == 0 {
+		midPoint = pinsLeft / 2
+	} else {
+		midPoint = (pinsLeft + 1) / 2
+	}
+
 	pins := make(map[int]int, pinsLeft)
 	for x := 0; x <= pinsLeft; x++ {
-		pins[x] = 10
+		if x < midPoint {
+			pins[x] = 10 - weighting
+		} else {
+			pins[x] = 10 + weighting
+		}
 	}
+
+	fmt.Printf("DEBUG: pins %v\n", pins)
 
 	totalWeight := 0
 	for _, weight := range pins {
@@ -182,6 +198,30 @@ func (p *Player) CalculateScore() {
 				value, _ := strconv.Atoi(string(char))
 				p.Score += value
 			}
+		}
+	}
+}
+
+func (p *Player) ChangeStats(status string, value int) {
+	if status == "skill" {
+		p.Skill += value
+		if p.Skill > 10 {
+			p.Skill = 10
+		}
+
+		if p.Skill < 0 {
+			p.Skill = 0
+		}
+	}
+
+	if status == "mentality" {
+		p.Mentality += value
+		if p.Mentality > 10 {
+			p.Mentality = 10
+		}
+
+		if p.Mentality < 1 {
+			p.Mentality = 1
 		}
 	}
 }

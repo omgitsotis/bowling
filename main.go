@@ -37,6 +37,8 @@ func startGame() {
 		fmt.Printf("player score so far [%s]\n", humanPlayer.ScoreCard)
 		cpuPlayer.PlayFrame()
 		fmt.Printf("cpu score card so far[%s]\n", cpuPlayer.ScoreCard)
+		cpuPlayer.ChangeStats(player.Skill, -1)
+		fmt.Printf("cpu player skill [%d]\n", cpuPlayer.Skill)
 		fmt.Print("Continue? ")
 		line := readLine()
 		switch strings.ToLower(line) {
@@ -53,6 +55,8 @@ func startGame() {
 
 	humanPlayer.PlayFinalFrame()
 	fmt.Printf("final player score [%s]\n", humanPlayer.ScoreCard)
+	cpuPlayer.ChangeStats(player.Skill, 9)
+	fmt.Printf("cpu player skill [%d]\n", cpuPlayer.Skill)
 	cpuPlayer.PlayFinalFrame()
 	fmt.Printf("final cpu score [%s]\n", cpuPlayer.ScoreCard)
 
